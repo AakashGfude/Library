@@ -1,0 +1,16 @@
+{
+  "db": {
+    "name": "db",
+    "connector": "memory"
+  },
+  "library": {
+    "host": "",
+    "port": 0,
+    "url": "mongodb://AakashGC:maniamcoolyo9@ds123193.mlab.com:23193/library",
+    "database": "library",
+    "password": "",
+    "name": "library",
+    "user": "AakashGC",
+    "connector": "mongodb"
+  }
+}
