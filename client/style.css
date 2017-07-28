@@ -10,3 +10,35 @@ nav a {
   font-size: 1.5rem;
   cursor: pointer;
 }
+
+.list-of-books {
+  padding: 1vw;
+}
+
+.book-desc {
+  margin-bottom: 1vw;
+  padding: 1vw;
+}
+
+.author-name {
+  margin-left: 1vw;
+}
+
+#addBook {
+  margin: 1vw;
+}
+
+.navbar {
+  position: fixed;
+  top: 0px;
+  width: 100vw;
+  z-index: 3;
+}
+
+.book-op {
+  float: right;
+}
+
+.book-op .button:first-child {
+  margin-right: 1vw;
+}
