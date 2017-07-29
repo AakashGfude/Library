@@ -42,3 +42,7 @@ nav a {
 .book-op .button:first-child {
   margin-right: 1vw;
 }
+
+.hide {
+  display: none;
+}
