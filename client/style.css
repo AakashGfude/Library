@@ -52,3 +52,22 @@ nav a {
   right: 1vw;
   top: 1vw;
 }
+
+.list-of-unassigned-books .book-desc {
+  cursor: pointer;
+}
+
+#bookListModal h2 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.user-op {
+  margin-top: -5px;
+}
+
+.list-p {
+  font-size: 1.8em;
+  margin-bottom: 10px;
+  margin-left: 10px;
+}

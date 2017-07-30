@@ -1,6 +1,7 @@
 $(document).ready(function() {
   window.token = localStorage.getItem('accessToken');
   window.role = localStorage.getItem('role');
+  window.currentUser = localStorage.getItem('id');
   if (!token || token === undefined) {
     $('#loginModal').addClass('is-active');
   }
@@ -33,11 +34,55 @@ $(document).ready(function() {
           return user;
         }
       }).map(function(user) {
-        $('.list-of-users').append('<div class="user-desc card" id="'+ user.id +'"><div class="user-op"><button class="button is-info is-outlined add-book-user"><i class="fa fa-pencil"></i></button><button class="button is-danger is-outlined show-book-user"><i class="fa fa-book"></i></button></div><p class="user-name"><span>Email: </span><span>'+ user.email +'<span></p></div>')
+        $('.list-of-users').append('<div class="user-desc card" id="'+ user.id +'"><div class="user-op"><button class="button is-info is-outlined add-book-user"><span>Add Book</span></button><button class="button is-danger is-outlined show-book-user"><span>View Book(s)</span></button></div><p class="user-name"><span>Email: </span><span>'+ user.email +'<span></p></div>')
       });
+    })
+  } else if (role == 'user'){
+    $('.for-admin').addClass('hide');
+    $.ajax({
+      url: '/api/persons/books?access_token=' + token + '&id=' + currentUser,
+      method: "GET"
+    }).then(function(data){
+      var book = data.data;
+      var $listOfBooks = $('.list-of-books');
+      for(var i in book) {
+        $listOfBooks.append('<div class="book-desc card" id="'+ book[i].id +'"><div class="book-op"><button class="button is-danger is-outlined delete-user-book"><i class="fa fa-times"></i></button></div><p class="book-title"><span>Title: </span><span>'+ book[i].title +'<span><p><div class="book-authors"><p>Author(s):<p></div></div>');
+        for(var k in book[i].authors) {
+          $($listOfBooks.find('.book-desc')[i]).find('.book-authors').append('<p class="author-name"><span>'+ book[i].authors[k].firstname+'</span><span> ' + book[i].authors[k].middlename +'</span><span> '+ book[i].authors[k].lastname + '</span></p>')
+        }
+      }
     })
   }
 });
+
+var openRemainingBookModal = function(userId) {
+  $.ajax({
+    url:'/api/persons/remaining-books?access_token=' + token + '&id=' + userId,
+    method: "GET"
+  }).then(function(data) {
+    var books = data.books;
+    $('#bookListModal').addClass('is-active');
+    $('.list-of-unassigned-books').html('');
+    for(var i in books) {
+      $('.list-of-unassigned-books').append('<div class="book-desc card" id="'+ books[i].id +'"><p class="book-title">' + books[i].title + '</p><div class="book-authors"><p>Authors:</p></div></div>');
+      for(var k in books[i].authors) {
+        $($('.list-of-unassigned-books').find('.book-desc')[i]).find('.book-authors').append('<p class="author-name"><span>'+ books[i].authors[k].firstname+'</span><span> ' + books[i].authors[k].middlename +'</span><span> '+ books[i].authors[k].lastname + '</span></p>')
+      }
+    }
+  });
+}
+
+$('.list-of-books').on('click','.delete-user-book',function(e) {
+  var $this = $(e.target);
+  var id = $this.closest('.book-desc').attr('id');
+  $.ajax({
+    url: '/api/persons/'+ currentUser + '/books/' + id + '?access_token=' + token,
+    method: 'DELETE'
+  }).then(function(data) {
+      location.reload();
+  })
+});
+
 
 $('.modal-close').on('click',function(e) {
   var $this = $(e.target);
@@ -59,6 +104,7 @@ $('#login-button').on('click',function(e) {
   request.done(function(msg) {
     localStorage.setItem('accessToken',msg.token);
     localStorage.setItem('role',msg.role);
+    localStorage.setItem('id',msg.id);
     location.reload();
   })
 });
@@ -70,15 +116,22 @@ $('#logout').on('click',function() {
   }).then(function() {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('role');
+    localStorage.removeItem('id');
     location.reload();
   })
 });
 
-$('#addBook').on('click',function() {
-  var $modal = $('#bookModal');
-  $modal.addClass('is-active');
-  $modal.find('#edit-book-button').addClass('hide');
-  $modal.find('#add-book-button').removeClass('hide');
+$('#addBook').on('click',function(e) {
+  if (role == 'admin') {
+    var $modal = $('#bookModal');
+    $modal.addClass('is-active');
+    $modal.find('#edit-book-button').addClass('hide');
+    $modal.find('#add-book-button').removeClass('hide');
+  } else if (role == 'user') {
+    // var $this = $(e.target);
+    // userId = $this.closest('.user-desc').attr('id');
+    openRemainingBookModal(currentUser);
+  }
 })
 
 var converttoAuthorArray = function(bookAuthors) {
@@ -180,20 +233,7 @@ var userId = null;
 $('.list-of-users').on('click','.add-book-user',function(e) {
   var $this = $(e.target);
   userId = $this.closest('.user-desc').attr('id');
-  $.ajax({
-    url:'/api/Books/remaining-books?access_token=' + token + '&id=' + userId,
-    method: "GET"
-  }).then(function(data) {
-    var books = data.books;
-    $('#bookListModal').addClass('is-active');
-    $('.list-of-unassigned-books').html('');
-    for(var i in books) {
-      $('.list-of-unassigned-books').append('<div class="book-desc card" id="'+ books[i].id +'"><p>' + books[i].title + '</p><div class="book-authors"><p>Authors:</p></div></div>');
-      for(var k in books[i].authors) {
-        $($('.list-of-unassigned-books').find('.book-desc')[i]).find('.book-authors').append('<p class="author-name"><span>'+ books[i].authors[k].firstname+'</span><span> ' + books[i].authors[k].middlename +'</span><span> '+ books[i].authors[k].lastname + '</span></p>')
-      }
-    }
-  });
+  openRemainingBookModal(userId);
 });
 $('.list-of-users').on('click','.show-book-user',function(e) {
   var $this = $(e.target);
@@ -206,7 +246,7 @@ $('.list-of-users').on('click','.show-book-user',function(e) {
     $('#bookListModal').addClass('is-active');
     $('.list-of-unassigned-books').html('');
     for(var i in books) {
-      $('.list-of-unassigned-books').append('<div class="book-desc-delete card" id="'+ books[i].id +'"><p>' + books[i].title + '</p><button class="button is-danger is-outlined delete-book-user"><i class="fa fa-times"></i></button><div class="book-authors"><p>Authors:</p></div></div>');
+      $('.list-of-unassigned-books').append('<div class="book-desc-delete card" id="'+ books[i].id +'"><p class="book-title">' + books[i].title + '</p><button class="button is-danger is-outlined delete-book-user"><i class="fa fa-times"></i></button><div class="book-authors"><p>Authors:</p></div></div>');
       for(var k in books[i].authors) {
         $($('.list-of-unassigned-books').find('.book-desc-delete')[i]).find('.book-authors').append('<p class="author-name"><span>'+ books[i].authors[k].firstname+'</span><span> ' + books[i].authors[k].middlename +'</span><span> '+ books[i].authors[k].lastname + '</span></p>')
       }
@@ -218,7 +258,7 @@ $('.list-of-unassigned-books').on('click','.book-desc',function(e) {
   var $this = $(e.target);
   var id = $this.closest('.book-desc').attr('id');
   var $bookDesc = $this.closest('.book-desc');
-  var title = $($bookDesc.find('p')).text();
+  var title = $($bookDesc.find('.book-title')).text();
   var bookAuthors = $('#bookListModal').find('#book-authors').val();
   var authors = $bookDesc.find('.book-authors').find('.author-name');
   console.log(authors);
@@ -233,7 +273,9 @@ $('.list-of-unassigned-books').on('click','.book-desc',function(e) {
     authorsArray.push(authorName);
   }
   var authors = converttoAuthorArray(authorsArray);
-  console.log(authors,id);
+  if (role == 'user') {
+    userId = currentUser;
+  }
   $.ajax({
     url: '/api/persons/'+ userId +'/books?access_token='+token,
     method: "POST",
@@ -254,7 +296,6 @@ $('.list-of-unassigned-books').on('click','.delete-book-user',function(e) {
       url: '/api/persons/'+ userId + '/books/' + id + '?access_token=' + token,
       method: 'DELETE'
     }).then(function(data) {
-        console.log(data);
-        //location.reload();
+        location.reload();
     })
 })
