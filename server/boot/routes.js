@@ -3,7 +3,7 @@ module.exports = function(app) {
   var Book = app.models.Book;
   var Role = app.models.Role;
   var RoleMapping = app.models.RoleMapping;
-  // User.create({email: 'bugs@bunny.com', password: 'bugs'}, function(err, userInstance) {
+  // User.create({email: 'daffy@duck.com', password: 'daffy'}, function(err, userInstance) {
   //   console.log(userInstance);
   // });
 
@@ -22,7 +22,6 @@ module.exports = function(app) {
             id: token.userId
           })
         } else if (!role){
-          console.log(token.userId);
           res.json({
             role:"user",
             token: token.id,
@@ -30,32 +29,17 @@ module.exports = function(app) {
           })
         }
       })
-      // if (err) {
-      //   res.render('response', { //render view named 'response.ejs'
-      //     title: 'Login failed',
-      //     content: err,
-      //     redirectTo: '/',
-      //     redirectToLinkText: 'Try again'
-      //   });
-      //   return;
-      // }
-      // res.render('home', { //login user and render 'home' view
-      //   email: req.body.email,
-      //   accessToken: token.id
-      // });
     });
   });
 
   // logout functionality
   app.get('/api/logout', function (req, res, next) {
 		const access_token = req.query.access_token;
-    console.log(access_token);
 		// if (!access_token) {
 		// 	res.status(400).json({"error": "access token required"});
 		// 	return;
 		// }
 		User.logout(access_token, function (err,data) {
-      console.log('callback me aaya',err,data);
 			if (err) {
 				res.status(404).json({"error": "logout failed"});
 				return;
@@ -74,15 +58,11 @@ module.exports = function(app) {
     Book.find({
     },function(err,books) {
       var titles = [];
-      console.log(books);
       for (var i =0; i<books.length;i++) {
-        console.log(books[i].title)
-        console.log(books[i].toJSON().userId);
         if (books[i].toJSON().userId) {
           titles.push(books[i].title);
         }
       }
-      console.log(titles);
       books = books.filter(function(data){
         if (!data.toJSON().userId) {
           return data;
@@ -99,7 +79,6 @@ module.exports = function(app) {
           bookFinal.push(books[i]);
         }
       }
-      console.log(bookFinal);
       res.json({
         "books": bookFinal
       })

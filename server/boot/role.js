@@ -33,4 +33,20 @@ module.exports = function(app) {
 
     });
   });
+
+  Role.create({
+    name: 'user'
+  }, function(err, role) {
+    if (err) throw err;
+
+
+    //make bugs an admin
+    role.principals.create({
+      principalType: RoleMapping.USER,
+      principalId: '597dcb5bd83d44314c4e72f5'
+    }, function(err, principal) {
+      if (err) throw err;
+
+    });
+  });
 };

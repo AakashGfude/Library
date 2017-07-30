@@ -62,6 +62,8 @@ var openRemainingBookModal = function(userId) {
   }).then(function(data) {
     var books = data.books;
     $('#bookListModal').addClass('is-active');
+    $('#list-unassigned').removeClass('hide');
+    $('#list-assigned').addClass('hide');
     $('.list-of-unassigned-books').html('');
     for(var i in books) {
       $('.list-of-unassigned-books').append('<div class="book-desc card" id="'+ books[i].id +'"><p class="book-title">' + books[i].title + '</p><div class="book-authors"><p>Authors:</p></div></div>');
@@ -244,6 +246,8 @@ $('.list-of-users').on('click','.show-book-user',function(e) {
   }).then(function(data){
     var books = data.data;
     $('#bookListModal').addClass('is-active');
+    $('#list-unassigned').addClass('hide');
+    $('#list-assigned').removeClass('hide');
     $('.list-of-unassigned-books').html('');
     for(var i in books) {
       $('.list-of-unassigned-books').append('<div class="book-desc-delete card" id="'+ books[i].id +'"><p class="book-title">' + books[i].title + '</p><button class="button is-danger is-outlined delete-book-user"><i class="fa fa-times"></i></button><div class="book-authors"><p>Authors:</p></div></div>');

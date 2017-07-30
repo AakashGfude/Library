@@ -71,3 +71,7 @@ nav a {
   margin-bottom: 10px;
   margin-left: 10px;
 }
+
+#loginModal .modal-background {
+  background-color: rgba(10, 10, 10, 1);
+}
