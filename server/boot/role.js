@@ -7,7 +7,6 @@ module.exports = function(app) {
   }, function(err, role) {
     if (err) throw err;
 
-    console.log('Created role:', role);
 
     //make bugs an admin
     role.principals.create({
@@ -16,7 +15,6 @@ module.exports = function(app) {
     }, function(err, principal) {
       if (err) throw err;
 
-      console.log('Created principal:', principal);
     });
   });
 
@@ -25,7 +23,6 @@ module.exports = function(app) {
   }, function(err, role) {
     if (err) throw err;
 
-    console.log('Created role:', role);
 
     //make bugs an admin
     role.principals.create({
@@ -34,7 +31,6 @@ module.exports = function(app) {
     }, function(err, principal) {
       if (err) throw err;
 
-      console.log('Created principal:', principal);
     });
   });
 };

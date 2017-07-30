@@ -11,13 +11,30 @@ $(document).ready(function() {
     }).then(function(data){
       console.log(data);
       var $listOfBooks = $('.list-of-books');
-
+      data = data.filter(function(book) {
+          if (!book.userId) {
+            return book;
+          }
+      })
       for(var i in data) {
-        $('.list-of-books').append('<div class="book-desc card" id="'+ data[i].id +'"><div class="book-op"><button class="button is-info is-outlined edit-book"><i class="fa fa-pencil"></i></button><button class="button is-danger is-outlined delete-book"><i class="fa fa-times"></i></button></div><p class="book-title"><span>Title: </span><span>'+ data[i].title +'<span><p><div class="book-authors"><p>Author(s):<p></div></div>');
+        $listOfBooks.append('<div class="book-desc card" id="'+ data[i].id +'"><div class="book-op"><button class="button is-info is-outlined edit-book"><i class="fa fa-pencil"></i></button><button class="button is-danger is-outlined delete-book"><i class="fa fa-times"></i></button></div><p class="book-title"><span>Title: </span><span>'+ data[i].title +'<span><p><div class="book-authors"><p>Author(s):<p></div></div>');
         for(var k in data[i].authors) {
           $($listOfBooks.find('.book-desc')[i]).find('.book-authors').append('<p class="author-name"><span>'+ data[i].authors[k].firstname+'</span><span> ' + data[i].authors[k].middlename +'</span><span> '+ data[i].authors[k].lastname + '</span></p>')
         }
       }
+    });
+    $.ajax({
+      url: '/api/persons?access_token=' + token,
+      method: "GET"
+    }).then(function(data) {
+      console.log(data);
+      var users = data.filter(function(user) {
+        if(user.role == 'user') {
+          return user;
+        }
+      }).map(function(user) {
+        $('.list-of-users').append('<div class="user-desc card" id="'+ user.id +'"><div class="user-op"><button class="button is-info is-outlined add-book-user"><i class="fa fa-pencil"></i></button><button class="button is-danger is-outlined show-book-user"><i class="fa fa-book"></i></button></div><p class="user-name"><span>Email: </span><span>'+ user.email +'<span></p></div>')
+      });
     })
   }
 });
@@ -66,7 +83,9 @@ $('#addBook').on('click',function() {
 
 var converttoAuthorArray = function(bookAuthors) {
   var authorsArray = [];
-  bookAuthors = bookAuthors.split(',');
+  if (typeof bookAuthors == 'string') {
+    bookAuthors = bookAuthors.split(',');
+  }
   for (var i in bookAuthors) {
     var nameArray = bookAuthors[i].trim().split(' ');
     authorsArray.push({
@@ -91,9 +110,8 @@ $('#add-book-button').on('click',function() {
       authors: authorsArray
     }
   }).then(function(data){
-    console.log(data);
+    location.reload();
   })
-  console.log(authorsArray);
 });
 
 
@@ -156,4 +174,87 @@ $('.list-of-books').on('click','.delete-book',function(e) {
   }).then(function(data) {
     location.reload();
   })
+});
+
+var userId = null;
+$('.list-of-users').on('click','.add-book-user',function(e) {
+  var $this = $(e.target);
+  userId = $this.closest('.user-desc').attr('id');
+  $.ajax({
+    url:'/api/Books/remaining-books?access_token=' + token + '&id=' + userId,
+    method: "GET"
+  }).then(function(data) {
+    var books = data.books;
+    $('#bookListModal').addClass('is-active');
+    $('.list-of-unassigned-books').html('');
+    for(var i in books) {
+      $('.list-of-unassigned-books').append('<div class="book-desc card" id="'+ books[i].id +'"><p>' + books[i].title + '</p><div class="book-authors"><p>Authors:</p></div></div>');
+      for(var k in books[i].authors) {
+        $($('.list-of-unassigned-books').find('.book-desc')[i]).find('.book-authors').append('<p class="author-name"><span>'+ books[i].authors[k].firstname+'</span><span> ' + books[i].authors[k].middlename +'</span><span> '+ books[i].authors[k].lastname + '</span></p>')
+      }
+    }
+  });
+});
+$('.list-of-users').on('click','.show-book-user',function(e) {
+  var $this = $(e.target);
+  userId = $this.closest('.user-desc').attr('id');
+  $.ajax({
+    url: '/api/persons/books?access_token=' + token + '&id=' + userId,
+    method: "GET"
+  }).then(function(data){
+    var books = data.data;
+    $('#bookListModal').addClass('is-active');
+    $('.list-of-unassigned-books').html('');
+    for(var i in books) {
+      $('.list-of-unassigned-books').append('<div class="book-desc-delete card" id="'+ books[i].id +'"><p>' + books[i].title + '</p><button class="button is-danger is-outlined delete-book-user"><i class="fa fa-times"></i></button><div class="book-authors"><p>Authors:</p></div></div>');
+      for(var k in books[i].authors) {
+        $($('.list-of-unassigned-books').find('.book-desc-delete')[i]).find('.book-authors').append('<p class="author-name"><span>'+ books[i].authors[k].firstname+'</span><span> ' + books[i].authors[k].middlename +'</span><span> '+ books[i].authors[k].lastname + '</span></p>')
+      }
+    }
+  })
+})
+
+$('.list-of-unassigned-books').on('click','.book-desc',function(e) {
+  var $this = $(e.target);
+  var id = $this.closest('.book-desc').attr('id');
+  var $bookDesc = $this.closest('.book-desc');
+  var title = $($bookDesc.find('p')).text();
+  var bookAuthors = $('#bookListModal').find('#book-authors').val();
+  var authors = $bookDesc.find('.book-authors').find('.author-name');
+  console.log(authors);
+  var authorsArray = [];
+  for(var i=0;i<authors.length;i++) {
+    console.log(authors[i]);
+    var authorSpan = $($(authors[i]).find('span'));
+    var authorName = '';
+    for (var k=0; k< authorSpan.length;k++) {
+      authorName += $(authorSpan[k]).text();
+    }
+    authorsArray.push(authorName);
+  }
+  var authors = converttoAuthorArray(authorsArray);
+  console.log(authors,id);
+  $.ajax({
+    url: '/api/persons/'+ userId +'/books?access_token='+token,
+    method: "POST",
+    data: {
+      userId: id,
+      title: title,
+      authors: authors
+    }
+  }).then(function(data) {
+      location.reload();
+  })
+});
+
+$('.list-of-unassigned-books').on('click','.delete-book-user',function(e) {
+    var $this = $(e.target);
+    var id = $this.closest('.book-desc-delete').attr('id');
+    $.ajax({
+      url: '/api/persons/'+ userId + '/books/' + id + '?access_token=' + token,
+      method: 'DELETE'
+    }).then(function(data) {
+        console.log(data);
+        //location.reload();
+    })
 })

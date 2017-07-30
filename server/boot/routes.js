@@ -12,10 +12,8 @@ module.exports = function(app) {
       email: req.body.email,
       password: req.body.password
     }, 'user', function(err, token) {
-      console.log(token);
       Role.isInRole('admin',{principalType: RoleMapping.USER,
       principalId: token.userId},function(err,role) {
-        console.log(role,'rollleezz');
         if (role) {
           res.json({
             role:"admin",

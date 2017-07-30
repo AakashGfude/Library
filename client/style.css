@@ -15,7 +15,7 @@ nav a {
   padding: 1vw;
 }
 
-.book-desc {
+.book-desc, .user-desc,.book-desc-delete {
   margin-bottom: 1vw;
   padding: 1vw;
 }
@@ -35,14 +35,20 @@ nav a {
   z-index: 3;
 }
 
-.book-op {
+.book-op, .user-op {
   float: right;
 }
 
-.book-op .button:first-child {
+.book-op .button:first-child,.user-op .button:first-child {
   margin-right: 1vw;
 }
 
 .hide {
   display: none;
+}
+
+.delete-book-user {
+  position: absolute;
+  right: 1vw;
+  top: 1vw;
 }
