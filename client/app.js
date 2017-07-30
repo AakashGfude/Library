@@ -223,11 +223,14 @@ $('#edit-book-button').on('click',function(e) {
 $('.list-of-books').on('click','.delete-book',function(e) {
   var $this = $(e.target);
   var id = $this.closest('.book-desc').attr('id');
+  var title = $($this.closest('.book-desc').find('.book-title').find('span')[1]).text();
+  console.log(title);
   $.ajax({
-    url: '/api/Books/'+ id + '?access_token=' + token,
+    url: '/api/booksAll/?access_token=' + token + '&title='+title,
     method: 'DELETE'
   }).then(function(data) {
-    location.reload();
+
+    //location.reload();
   })
 });
 

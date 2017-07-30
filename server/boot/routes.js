@@ -83,5 +83,25 @@ module.exports = function(app) {
         "books": bookFinal
       })
     });
+  });
+
+  app.delete('/api/booksAll/',function(req,res) {
+    var access_token = req.query.access_token;
+    var title = req.query.title;
+    Book.remove({title: title},function(err,books) {
+      res.json({
+        "deleted": true
+      })
+    })
+  });
+
+  app.put('/api/updateAll/',function(req,res) {
+    var access_token = req.query.access_token;
+    var title = req.query.title;
+    Book.remove({title: title},function(err,books) {
+      res.json({
+        "deleted": true
+      })
+    })
   })
 }
